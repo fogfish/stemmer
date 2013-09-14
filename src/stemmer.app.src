@@ -1,0 +1,15 @@
+{application, stemmer,
+   [
+      {description, "porter stemmer algorithm"},
+      {vsn,         "0.0.0"},
+      {modules,     [
+         stemmer
+      ]},
+      {registered,  []},
+      {applications,[
+         kernel,
+         stdlib
+      ]},
+      {env, []}
+   ]
+}.  
