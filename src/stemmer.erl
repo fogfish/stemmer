@@ -29,7 +29,7 @@
 -spec(word/1 :: (list() | binary()) -> list() | binary()).
 
 word(Word)
- when is_binary(Word) ->
+ when is_binary(Word), byte_size(Word) > 2 ->
  	rules5(
 	 	rules4(
 	 		rules3(
@@ -39,6 +39,10 @@ word(Word)
 	 		)
 	 	)
 	);
+
+word(Word)
+ when is_binary(Word)  ->
+   Word;
 
 word(Word)
  when is_atom(Word) ->
@@ -656,13 +660,17 @@ is_vowel(_,    _) -> false.
 
 %% *o  - the stem ends cvc, where the second c is not W, X or Y (e.g.
 %%       -WIL, -HOP).
-'*o'(Seq, Len) ->
+'*o'(Seq, Len)
+ when size(Seq) >= 3 ->
 	case binary:part(Seq, Len - 3, 3) of
 		<<_, _, $w>> -> false;
 		<<_, _, $x>> -> false;
 		<<_, _, $y>> -> false;
 		<<A, B,  C>> -> (not is_vowel(A, false)) and (is_vowel(B, false)) and (not is_vowel(C, false))
-	end.
+	end;
+
+'*o'(_, _) ->
+	false.
 
 %% 
 %% fold function over sequence
