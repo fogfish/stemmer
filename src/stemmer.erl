@@ -94,13 +94,15 @@ rules1(<<_, _, $e, $d>>, Len, X) ->
 		false -> X
 	end;
 
-rules1(<<$e, $d>>, Len, X) ->
-	case '*v*'(X, Len - 2) of
-		true  -> rules1b(binary:part(X, Len - 4, 2), Len - 2, binary:part(X, 0, Len - 2));
-		false -> X
-	end;
+% the rule is not applicable for short word
+% rules1(<<$e, $d>>, Len, X) ->
+% 	case '*v*'(X, Len - 2) of
+% 		true  -> rules1b(binary:part(X, Len - 3, 2), Len - 2, binary:part(X, 0, Len - 2));
+% 		false -> X
+% 	end;
 
-rules1(<<_, $i, $n, $g>>, Len, X) ->
+rules1(<<_, $i, $n, $g>>, Len, X)
+ when Len >= 5 ->
 	case '*v*'(X, Len - 3) of
 		true  -> rules1b(binary:part(X, Len - 5, 2), Len - 3, binary:part(X, 0, Len - 3));
 		false -> X
