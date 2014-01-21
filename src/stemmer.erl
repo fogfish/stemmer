@@ -59,20 +59,23 @@ word(Word)
 %%                                        ties      ->  ti
 %%     SS   -> SS                         caress    ->  caress
 %%     S    ->                            cats      ->  cat
-rules1(Word) ->
+rules1a(Word) ->
 	case byte_size(Word) of
-		Len when Len >= 4 -> rules1(binary:part(Word, Len, -4), Len, Word);
-		Len when Len <  4 -> rules1(binary:part(Word, Len, -2), Len, Word);
+		Len when Len >= 4 -> rules1a(binary:part(Word, Len, -4), Len, Word);
+		Len when Len <  4 -> rules1a(binary:part(Word, Len, -2), Len, Word);
 		_                 -> Word
 	end.
 
-rules1(<<$s, $s, $e, $s>>, Len, X) -> binary:part(X, 0, Len - 2);
-rules1(<<_,  $i, $e, $s>>, Len, X) -> binary:part(X, 0, Len - 2);
-rules1(<<_,  _,  $s, $s>>,_Len, X) -> X;
-rules1(<<_,  _,  _,  $s>>, Len, X) -> binary:part(X, 0, Len - 1);
+rules1a(<<$s, $s, $e, $s>>, Len, X) -> binary:part(X, 0, Len - 2);
+rules1a(<<_,  $i, $e, $s>>, Len, X) -> binary:part(X, 0, Len - 2);
+rules1a(<<_,  _,  $s, $s>>,_Len, X) -> X;
+rules1a(<<_,  _,  _,  $s>>, Len, X) -> binary:part(X, 0, Len - 1);
 
-rules1(<<$s, $s>>,_Len, X) -> X;
-rules1(<<_,  $s>>, Len, X) -> binary:part(X, 0, Len - 1);
+rules1a(<<$s, $s>>,_Len, X) -> X;
+rules1a(<<_,  $s>>, Len, X) -> binary:part(X, 0, Len - 1);
+
+rules1a(_, _Len, X) ->
+	X.
 
 
 %% Step 1b
@@ -82,15 +85,21 @@ rules1(<<_,  $s>>, Len, X) -> binary:part(X, 0, Len - 1);
 %%                                        bled      ->  bled
 %%     (*v*) ING ->                       motoring  ->  motor
 %%                                        sing      ->  sing
-rules1(<<_, $e, $e, $d>>, Len, X) ->
+rules1b(Word) ->
+	case byte_size(Word) of
+		Len when Len >= 4 -> rules1b(binary:part(Word, Len, -4), Len, Word);
+		_                 -> Word
+	end.
+
+rules1b(<<_, $e, $e, $d>>, Len, X) ->
 	case measure(X, Len - 3) of
 		0 -> X;
 		_ -> binary:part(X, 0, Len - 1)
 	end;
 
-rules1(<<_, _, $e, $d>>, Len, X) ->
+rules1b(<<_, _, $e, $d>>, Len, X) ->
 	case '*v*'(X, Len - 2) of
-		true  -> rules1b(binary:part(X, Len - 4, 2), Len - 2, binary:part(X, 0, Len - 2));
+		true  -> rules1bb(binary:part(X, Len - 4, 2), Len - 2, binary:part(X, 0, Len - 2));
 		false -> X
 	end;
 
@@ -101,29 +110,40 @@ rules1(<<_, _, $e, $d>>, Len, X) ->
 % 		false -> X
 % 	end;
 
-rules1(<<_, $i, $n, $g>>, Len, X)
+rules1b(<<_, $i, $n, $g>>, Len, X)
  when Len >= 5 ->
 	case '*v*'(X, Len - 3) of
-		true  -> rules1b(binary:part(X, Len - 5, 2), Len - 3, binary:part(X, 0, Len - 3));
+		true  -> rules1bb(binary:part(X, Len - 5, 2), Len - 3, binary:part(X, 0, Len - 3));
 		false -> X
 	end;
+
+rules1b(_, _Len, X) ->
+	X.
+
 
 %% Step 1c
 %%     (*v*) Y -> I                    happy        ->  happi
 %%                                     sky          ->  sky
-rules1(<<_, _, _, $y>>, Len, X) ->
+rules1c(Word) ->
+	case byte_size(Word) of
+		Len when Len >= 4 -> rules1c(binary:part(Word, Len, -4), Len, Word);
+		Len when Len <  4 -> rules1c(binary:part(Word, Len, -2), Len, Word);
+		_                 -> Word
+	end.
+
+rules1c(<<_, _, _, $y>>, Len, X) ->
 	case '*v*'(X, Len - 1) of
 		true  -> <<(binary:part(X, 0, Len - 1))/binary, $i>>;
 		false -> X
 	end;
 
-rules1(<<_, $y>>, Len, X) ->
+rules1c(<<_, $y>>, Len, X) ->
 	case '*v*'(X, Len - 1) of
 		true  -> <<(binary:part(X, 0, Len - 1))/binary, $i>>;
 		false -> X
 	end;
 
-rules1(_, _Len, X) ->
+rules1c(_, _Len, X) ->
 	X.
 
 %% If the second or third of the rules in Step 1b is successful, the following
@@ -141,22 +161,26 @@ rules1(_, _Len, X) ->
 %%                                     fizz(ed)     ->  fizz
 %%     (m=1 and *o) -> E               fail(ing)    ->  fail
 %%                                     fil(ing)     ->  file
-rules1b(<<$a, $t>>,_Len, X) -> <<X/binary, $e>>;
-rules1b(<<$b, $l>>,_Len, X) -> <<X/binary, $e>>;
-rules1b(<<$i, $z>>,_Len, X) -> <<X/binary, $e>>;
-rules1b(<<$l, $l>>,_Len, X) -> X;
-rules1b(<<$s, $s>>,_Len, X) -> X;
-rules1b(<<$z, $z>>,_Len, X) -> X;
-rules1b(<< C,  C>>, Len, X) ->
+rules1bb(<<$a, $t>>,_Len, X) -> <<X/binary, $e>>;
+rules1bb(<<$b, $l>>,_Len, X) -> <<X/binary, $e>>;
+rules1bb(<<$i, $z>>,_Len, X) -> <<X/binary, $e>>;
+rules1bb(<<$l, $l>>,_Len, X) -> X;
+rules1bb(<<$s, $s>>,_Len, X) -> X;
+rules1bb(<<$z, $z>>,_Len, X) -> X;
+rules1bb(<< C,  C>>, Len, X) ->
 	case not is_vowel(X, false) of
 		true  -> binary:part(X, 0, Len - 1);
 		false -> X
 	end;
-rules1b(_, Len, X) ->
+rules1bb(_, Len, X) ->
 	case (measure(X, Len) =:= 1) and ('*o'(X, Len)) of
 		true  -> <<X/binary, $e>>;
 		false -> X
 	end.
+
+rules1(X) ->
+	rules1c(rules1b(rules1a(X))).
+
 
 %% Step 2
 %%
@@ -583,18 +607,13 @@ rules4(_, _Len, X) ->
 %%                                     rate           ->  rate
 %%     (m=1 and not *o) E ->           cease          ->  ceas
 %%
-%% Step 5b
-%%
-%%     (m > 1 and *d and *L) -> single letter
-%%                                     controll       ->  control
-%%                                     roll           ->  roll
-rules5(Word) ->
+rules5a(Word) ->
 	case byte_size(Word) of
-		Len when Len >= 4 -> rules5(binary:part(Word, Len, -2), Len, Word);
+		Len when Len >= 4 -> rules5a(binary:part(Word, Len, -2), Len, Word);
 		_                 -> Word
 	end.
 
-rules5(<<_, $e>>, Len, X) ->
+rules5a(<<_, $e>>, Len, X) ->
 	case measure(X, Len - 1) of
 		M when M > 1 -> binary:part(X, 0, Len - 1);
 		1            ->
@@ -605,14 +624,35 @@ rules5(<<_, $e>>, Len, X) ->
 		_            -> X
 	end;
 
-rules5(<<$l, $l>>, Len, X) ->
+rules5a(_, _Len, X) ->
+	X.
+
+
+%% Step 5b
+%%
+%%     (m > 1 and *d and *L) -> single letter
+%%                                     controll       ->  control
+%%                                     roll           ->  roll
+rules5b(Word) ->
+	case byte_size(Word) of
+		Len when Len >= 4 -> rules5b(binary:part(Word, Len, -2), Len, Word);
+		_                 -> Word
+	end.
+
+
+rules5b(<<$l, $l>>, Len, X) ->
 	case measure(X, Len) of
 		M when M > 1 -> binary:part(X, 0, Len - 1);
 		_            -> X
 	end;
 
-rules5(_, _Len, X) ->
+rules5b(_, _Len, X) ->
 	X.
+
+%%
+%%
+rules5(X) ->
+	rules5b(rules5a(X)).
 
 %%
 %% [C](VC){m}[V].
