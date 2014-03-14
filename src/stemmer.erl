@@ -126,9 +126,12 @@ rules1b(_, _Len, X) ->
 %%                                     sky          ->  sky
 rules1c(Word) ->
 	case byte_size(Word) of
-		Len when Len >= 4 -> rules1c(binary:part(Word, Len, -4), Len, Word);
-		Len when Len <  4 -> rules1c(binary:part(Word, Len, -2), Len, Word);
-		_                 -> Word
+		Len when Len >= 4 -> 
+			rules1c(binary:part(Word, Len, -4), Len, Word);
+		Len when Len <  4, Len > 1 -> 
+			rules1c(binary:part(Word, Len, -2), Len, Word);
+		_  ->
+			Word
 	end.
 
 rules1c(<<_, _, _, $y>>, Len, X) ->
