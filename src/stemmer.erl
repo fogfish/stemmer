@@ -61,9 +61,12 @@ word(Word)
 %%     S    ->                            cats      ->  cat
 rules1a(Word) ->
 	case byte_size(Word) of
-		Len when Len >= 4 -> rules1a(binary:part(Word, Len, -4), Len, Word);
-		Len when Len <  4 -> rules1a(binary:part(Word, Len, -2), Len, Word);
-		_                 -> Word
+		Len when Len >= 4 -> 
+			rules1a(binary:part(Word, Len, -4), Len, Word);
+		Len when Len >  1 -> 
+			rules1a(binary:part(Word, Len, -2), Len, Word);
+		_ -> 
+			Word
 	end.
 
 rules1a(<<$s, $s, $e, $s>>, Len, X) -> binary:part(X, 0, Len - 2);
@@ -87,20 +90,26 @@ rules1a(_, _Len, X) ->
 %%                                        sing      ->  sing
 rules1b(Word) ->
 	case byte_size(Word) of
-		Len when Len >= 4 -> rules1b(binary:part(Word, Len, -4), Len, Word);
-		_                 -> Word
+		Len when Len >= 4 -> 
+			rules1b(binary:part(Word, Len, -4), Len, Word);
+		_ -> 
+			Word
 	end.
 
 rules1b(<<_, $e, $e, $d>>, Len, X) ->
 	case measure(X, Len - 3) of
-		0 -> X;
-		_ -> binary:part(X, 0, Len - 1)
+		0 -> 
+			X;
+		_ -> 
+			binary:part(X, 0, Len - 1)
 	end;
 
 rules1b(<<_, _, $e, $d>>, Len, X) ->
 	case '*v*'(X, Len - 2) of
-		true  -> rules1bb(binary:part(X, Len - 4, 2), Len - 2, binary:part(X, 0, Len - 2));
-		false -> X
+		true  -> 
+			rules1bb(binary:part(X, Len - 4, 2), Len - 2, binary:part(X, 0, Len - 2));
+		false -> 
+			X
 	end;
 
 % the rule is not applicable for short word
@@ -113,8 +122,10 @@ rules1b(<<_, _, $e, $d>>, Len, X) ->
 rules1b(<<_, $i, $n, $g>>, Len, X)
  when Len >= 5 ->
 	case '*v*'(X, Len - 3) of
-		true  -> rules1bb(binary:part(X, Len - 5, 2), Len - 3, binary:part(X, 0, Len - 3));
-		false -> X
+		true  -> 
+			rules1bb(binary:part(X, Len - 5, 2), Len - 3, binary:part(X, 0, Len - 3));
+		false -> 
+			X
 	end;
 
 rules1b(_, _Len, X) ->
@@ -128,7 +139,7 @@ rules1c(Word) ->
 	case byte_size(Word) of
 		Len when Len >= 4 -> 
 			rules1c(binary:part(Word, Len, -4), Len, Word);
-		Len when Len <  4, Len > 1 -> 
+		Len when Len >  1 -> 
 			rules1c(binary:part(Word, Len, -2), Len, Word);
 		_  ->
 			Word
@@ -136,14 +147,18 @@ rules1c(Word) ->
 
 rules1c(<<_, _, _, $y>>, Len, X) ->
 	case '*v*'(X, Len - 1) of
-		true  -> <<(binary:part(X, 0, Len - 1))/binary, $i>>;
-		false -> X
+		true  -> 
+			<<(binary:part(X, 0, Len - 1))/binary, $i>>;
+		false -> 
+			X
 	end;
 
 rules1c(<<_, $y>>, Len, X) ->
 	case '*v*'(X, Len - 1) of
-		true  -> <<(binary:part(X, 0, Len - 1))/binary, $i>>;
-		false -> X
+		true  -> 
+			<<(binary:part(X, 0, Len - 1))/binary, $i>>;
+		false -> 
+			X
 	end;
 
 rules1c(_, _Len, X) ->
@@ -213,8 +228,10 @@ rules1(X) ->
 %%
 rules2(Word) ->
 	case byte_size(Word) of
-		Len when Len >= 7 -> rules2(binary:part(Word, Len, -7), Len, Word);
-		Len when Len >= 4 -> rules2(binary:part(Word, Len, -4), Len, Word);
+		Len when Len >= 7 -> 
+			rules2(binary:part(Word, Len, -7), Len, Word);
+		Len when Len >= 4 -> 
+			rules2(binary:part(Word, Len, -4), Len, Word);
 		_                 -> Word
 	end.
 
@@ -378,8 +395,10 @@ rules2(_, _Len, X) ->
 
 rules3(Word) ->
 	case byte_size(Word) of
-		Len when Len >= 5 -> rules3(binary:part(Word, Len, -5), Len, Word);
-		_                 -> Word
+		Len when Len >= 5 -> 
+			rules3(binary:part(Word, Len, -5), Len, Word);
+		_ -> 
+			Word
 	end.
 
 %%     (m>0) ICATE ->  IC              triplicate     ->  triplic
@@ -458,8 +477,10 @@ rules3(_, _Len, X) ->
 
 rules4(Word) ->
 	case byte_size(Word) of
-		Len when Len >= 5 -> rules4(binary:part(Word, Len, -5), Len, Word);
-		_                 -> Word
+		Len when Len >= 5 -> 
+			rules4(binary:part(Word, Len, -5), Len, Word);
+		_ -> 
+			Word
 	end.
 
 %%     (m>1) AL    ->                  revival        ->  reviv
@@ -612,8 +633,10 @@ rules4(_, _Len, X) ->
 %%
 rules5a(Word) ->
 	case byte_size(Word) of
-		Len when Len >= 4 -> rules5a(binary:part(Word, Len, -2), Len, Word);
-		_                 -> Word
+		Len when Len >= 4 -> 
+			rules5a(binary:part(Word, Len, -2), Len, Word);
+		_ -> 
+			Word
 	end.
 
 rules5a(<<_, $e>>, Len, X) ->
@@ -638,15 +661,19 @@ rules5a(_, _Len, X) ->
 %%                                     roll           ->  roll
 rules5b(Word) ->
 	case byte_size(Word) of
-		Len when Len >= 4 -> rules5b(binary:part(Word, Len, -2), Len, Word);
-		_                 -> Word
+		Len when Len >= 4 -> 
+			rules5b(binary:part(Word, Len, -2), Len, Word);
+		_                 -> 
+			Word
 	end.
 
 
 rules5b(<<$l, $l>>, Len, X) ->
 	case measure(X, Len) of
-		M when M > 1 -> binary:part(X, 0, Len - 1);
-		_            -> X
+		M when M > 1 -> 
+			binary:part(X, 0, Len - 1);
+		_            -> 
+			X
 	end;
 
 rules5b(_, _Len, X) ->
@@ -718,12 +745,13 @@ is_vowel(_,    _) -> false.
 	false.
 
 %% 
-%% fold function over sequence
+%% fold function over sequence of bytes
 fold(Fun,  Acc, Pos, Len, Seq)
  when Pos < Len ->
 	fold(Fun, Fun(binary:at(Seq, Pos), Acc), Pos + 1, Len, Seq);
 fold(_Fun, Acc, _Pos, _Len, _Seq) ->
 	Acc.
+
 
 
 
